@@ -20,33 +20,26 @@ afterAll(() => {
 describe('app.js tests', () => {
   describe('GET /api/categories', () => {
     // functionality
-    test('returns an array', () => {
+    test('returns an object with property categories which holds an array', () => {
       return request(app)
         .get('/api/categories')
         .expect(200)
         .then((result) => {
-          expect(Array.isArray(result.body.rows)).toBe(true);
+          console.log(result.body);
+          expect(result.body).toHaveProperty('categories');
+          expect(Array.isArray(result.body.categories)).toBe(true);
         });
     });
-    test('returns an array of objects', () => {
+    test('each object in array has property slug (string) and description (string) ', () => {
       return request(app)
         .get('/api/categories')
         .expect(200)
         .then((result) => {
-          return result.body.rows.forEach((obj) => {
+          result.body.categories.forEach((obj) => {
             expect(typeof obj).toBe('object');
             expect(Array.isArray(obj)).toBe(false);
-          });
-        });
-    });
-    test('that objects have properties slug and description', () => {
-      return request(app)
-        .get('/api/categories')
-        .expect(200)
-        .then((result) => {
-          return result.body.rows.forEach((obj) => {
-            expect(obj).toHaveProperty('slug');
-            expect(obj).toHaveProperty('description');
+            expect(obj).toHaveProperty('slug', expect.any(String));
+            expect(obj).toHaveProperty('description', expect.any(String));
           });
         });
     });
