@@ -6,7 +6,7 @@ exports.getCategories = () => {
         SELECT * FROM categories
     `
     )
-    .then((results) => {
-      return results.rows;
+    .then((categories) => {
+      return categories.rows;
     });
 };

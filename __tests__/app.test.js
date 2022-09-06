@@ -95,9 +95,9 @@ describe('app.js tests', () => {
           expect(review).toHaveProperty('category', expect.any(String));
           expect(review).toHaveProperty('owner', expect.any(String));
           expect(review).toHaveProperty('created_at', expect.any(String));
-        });
+          }); 
     });
-
+          
     // error handling
     test('400: Id is too large', () => {
       return request(app)
@@ -115,7 +115,6 @@ describe('app.js tests', () => {
           expect(msg).toBe('Review_id:999999 does not exist');
         });
     });
-
     test('400: Invalid id', () => {
       return request(app)
         .get('/api/reviews/raw')
@@ -124,5 +123,40 @@ describe('app.js tests', () => {
           expect(msg).toBe('Invalid Id');
         });
     });
-  });
+ });
+ 
+  describe('GET /api/users', () => {
+    // functionality
+    test('returns an object with property users which holds an array', () => {
+      return request(app)
+        .get('/api/users')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toHaveProperty('users');
+          expect(Array.isArray(body.users)).toBe(true);
+        });
+    });
+    test('each object in array has property username (string), name (string), and avatar_url (string)', () => {
+      return request(app)
+        .get('/api/users')
+        .expect(200)
+        .then(({ body: { users } }) => {
+          users.forEach((obj) => {
+            expect(typeof obj).toBe('object');
+            expect(Array.isArray(obj)).toBe(false);
+            expect(obj).toHaveProperty('username', expect.any(String));
+            expect(obj).toHaveProperty('name', expect.any(String));
+            expect(obj).toHaveProperty('avatar_url', expect.any(String));
+          });
+        });
+    });     
+    test('404: endpoint does not exist', () => {
+      return request(app)
+        .get('/api/usersbro')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Endpoint not found');
+        });
+    });
+  });  
 });
