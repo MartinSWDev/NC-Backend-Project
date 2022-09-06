@@ -24,10 +24,9 @@ describe('app.js tests', () => {
       return request(app)
         .get('/api/categories')
         .expect(200)
-        .then((result) => {
-          console.log(result.body);
-          expect(result.body).toHaveProperty('categories');
-          expect(Array.isArray(result.body.categories)).toBe(true);
+        .then(({ body }) => {
+          expect(body).toHaveProperty('categories');
+          expect(Array.isArray(body.categories)).toBe(true);
         });
     });
     test('each object in array has property slug (string) and description (string) ', () => {
@@ -49,7 +48,44 @@ describe('app.js tests', () => {
         .get('/api/categorie')
         .expect(404)
         .then((result) => {
-          expect(result.body.err).toBe('Endpoint not found');
+          expect(result.body.msg).toBe('Endpoint not found');
+        });
+    });
+  });
+
+  describe('GET /api/users', () => {
+    // functionality
+    test('returns an object with property users which holds an array', () => {
+      return request(app)
+        .get('/api/users')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toHaveProperty('users');
+          expect(Array.isArray(body.users)).toBe(true);
+        });
+    });
+    test('each object in array has property username (string), name (string), and avatar_url (string)', () => {
+      return request(app)
+        .get('/api/users')
+        .expect(200)
+        .then(({ body: { users } }) => {
+          users.forEach((obj) => {
+            expect(typeof obj).toBe('object');
+            expect(Array.isArray(obj)).toBe(false);
+            expect(obj).toHaveProperty('username', expect.any(String));
+            expect(obj).toHaveProperty('name', expect.any(String));
+            expect(obj).toHaveProperty('avatar_url', expect.any(String));
+          });
+        });
+    });
+
+    // error handling
+    test('404: endpoint does not exist', () => {
+      return request(app)
+        .get('/api/usersbro')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Endpoint not found');
         });
     });
   });
