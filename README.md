@@ -59,3 +59,15 @@ and
 ```
 PGDATABASE=nc_games_test
 ```
+
+3. Setup Database
+
+Before running any further tests or files we need to run our setup-dbs script in order to setup our databases.
+
+NOTE: This step assumes you have PostgreSQL setup correctly
+https://www.postgresql.org/
+
+```
+npm run setup-dbs
+```
+
