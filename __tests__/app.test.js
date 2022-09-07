@@ -199,17 +199,6 @@ describe('app.js tests', () => {
           expect(body.updated.votes).toBe(0);
         });
     });
-    test('object with negative value cant go below 0', () => {
-      return request(app)
-        .patch('/api/reviews/1')
-        .send({
-          inc_votes: -10,
-        })
-        .expect(200)
-        .then(({ body }) => {
-          expect(body.updated.votes).toBe(0);
-        });
-    });
     test('it returns object of updated review', () => {
       return request(app)
         .patch('/api/reviews/1')

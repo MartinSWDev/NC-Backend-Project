@@ -8,7 +8,7 @@ exports.patchReview = (reviewId, voteChange) => {
   } else {
     return db
       .query(
-        `UPDATE reviews SET votes = GREATEST(votes + $1, 0) WHERE review_id = $2 Returning *;`,
+        `UPDATE reviews SET votes = votes + $1 WHERE review_id = $2 Returning *;`,
         [voteChange, reviewId]
       )
       .then(({ rows }) => {
