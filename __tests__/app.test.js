@@ -55,7 +55,7 @@ describe('app.js tests', () => {
 
   describe('GET /api/reviews/:review_id', () => {
     // functionality
-    test('that specific properties are correct on returned review', () => {
+    test('that specific properties are correct on returned review (including if comment count 0)', () => {
       return request(app)
         .get('/api/reviews/1')
         .expect(200)
@@ -77,9 +77,10 @@ describe('app.js tests', () => {
             'created_at',
             '2021-01-18T10:00:20.514Z'
           );
+          expect(review).toHaveProperty('comment_count', 0);
         });
     });
-    test('returns any review object with correct properties', () => {
+    test('returns any review object with correct properties (including if comment count 0)', () => {
       return request(app)
         .get('/api/reviews/4') // Can change this number to test other reviews
         .expect(200)
@@ -95,9 +96,41 @@ describe('app.js tests', () => {
           expect(review).toHaveProperty('category', expect.any(String));
           expect(review).toHaveProperty('owner', expect.any(String));
           expect(review).toHaveProperty('created_at', expect.any(String));
-          }); 
+          expect(review).toHaveProperty('comment_count', 0);
+        });
     });
-          
+
+    // comment_count
+
+    test('that comment count is also returned with correct value when comments present', () => {
+      return request(app)
+        .get('/api/reviews/2')
+        .expect(200)
+        .then(({ body: { review } }) => {
+          expect(Array.isArray(review)).toBe(false);
+          expect(typeof review).toBe('object');
+          expect(review).toHaveProperty('review_id', 2);
+          expect(review).toHaveProperty('title', 'Jenga');
+          expect(review).toHaveProperty(
+            'review_body',
+            'Fiddly fun for all the family'
+          );
+          expect(review).toHaveProperty('designer', 'Leslie Scott');
+          expect(review).toHaveProperty(
+            'review_img_url',
+            'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png'
+          );
+          expect(review).toHaveProperty('votes', 5);
+          expect(review).toHaveProperty('category', 'dexterity');
+          expect(review).toHaveProperty('owner', 'philippaclaire9');
+          expect(review).toHaveProperty(
+            'created_at',
+            '2021-01-18T10:01:41.251Z'
+          );
+          expect(review).toHaveProperty('comment_count', 3);
+        });
+    });
+
     // error handling
     test('400: Id is too large', () => {
       return request(app)
@@ -123,8 +156,8 @@ describe('app.js tests', () => {
           expect(msg).toBe('Invalid Id');
         });
     });
- });
- 
+  });
+
   describe('GET /api/users', () => {
     // functionality
     test('returns an object with property users which holds an array', () => {
@@ -149,7 +182,7 @@ describe('app.js tests', () => {
             expect(obj).toHaveProperty('avatar_url', expect.any(String));
           });
         });
-    });     
+    });
     test('404: endpoint does not exist', () => {
       return request(app)
         .get('/api/usersbro')
@@ -158,5 +191,5 @@ describe('app.js tests', () => {
           expect(body.msg).toBe('Endpoint not found');
         });
     });
-  });  
+  });
 });
