@@ -10,9 +10,9 @@ function alreadyErrs(err, req, res, next) {
   }
 }
 
-function invalidId(err, req, res, next) {
+function invalidInputSyntax(err, req, res, next) {
   if (err.code === '22P02') {
-    res.status(400).send({ msg: 'Invalid Id' });
+    res.status(400).send({ msg: 'Invalid input syntax' });
   } else {
     next(err);
   }
@@ -26,4 +26,9 @@ function defaultErr(err, req, res, next) {
   res.render('error', { error: err });
 }
 
-module.exports = { defaultErr, alreadyErrs, notFound, invalidId };
+module.exports = {
+  defaultErr,
+  alreadyErrs,
+  notFound,
+  invalidInputSyntax,
+};
