@@ -153,7 +153,7 @@ describe('app.js tests', () => {
         .get('/api/reviews/raw')
         .expect(400)
         .then(({ body: { msg } }) => {
-          expect(msg).toBe('Invalid Id');
+          expect(msg).toBe('Invalid input syntax');
         });
     });
   });
@@ -189,6 +189,125 @@ describe('app.js tests', () => {
         .expect(404)
         .then(({ body }) => {
           expect(body.msg).toBe('Endpoint not found');
+        });
+    });
+  });
+
+  describe('PATCH /api/reviews/:review_id', () => {
+    // functionality
+    test('it accepts object with key inc_votes and value of number (can be both positive and negative) and returns object with key of updated containing updated object', () => {
+      return request(app)
+        .patch('/api/reviews/1')
+        .send({
+          inc_votes: 1,
+        })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toHaveProperty('updated');
+          expect(Array.isArray(body)).toBe(false);
+          expect(Array.isArray(body.updated)).toBe(false);
+          expect(typeof body).toBe('object');
+          expect(typeof body.updated).toBe('object');
+        });
+    });
+    test('object with positive value increases', () => {
+      return request(app)
+        .patch('/api/reviews/1')
+        .send({
+          inc_votes: 10,
+        })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.updated.votes).toBe(11);
+        });
+    });
+    test('object with negative value decreases', () => {
+      return request(app)
+        .patch('/api/reviews/1')
+        .send({
+          inc_votes: -1,
+        })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.updated.votes).toBe(0);
+        });
+    });
+    test('it returns object of updated review', () => {
+      return request(app)
+        .patch('/api/reviews/1')
+        .send({
+          inc_votes: 10,
+        })
+        .expect(200)
+        .then(({ body }) => {
+          const obj_1 = {
+            review_id: 1,
+            title: 'Agricola',
+            designer: 'Uwe Rosenberg',
+            owner: 'mallionaire',
+            review_img_url:
+              'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+            review_body: 'Farmyard fun!',
+            category: 'euro game',
+            created_at: '2021-01-18T10:00:20.514Z',
+            votes: 11,
+          };
+          expect(body.updated).toEqual(obj_1);
+        });
+    });
+
+    // error handling
+    test('400: missing required fields for patch input', () => {
+      return request(app)
+        .patch('/api/reviews/1')
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('Invalid input, missing key or value');
+        });
+    });
+    test('400: incorrect value type for patch input ', () => {
+      return request(app)
+        .patch('/api/reviews/1')
+        .send({
+          inc_votes: 'cow',
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('Invalid input syntax');
+        });
+    });
+    test('400: incorrect value type for patch input ', () => {
+      return request(app)
+        .patch('/api/reviews/1')
+        .send({
+          inc_votes: 5.39,
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('Invalid input syntax');
+        });
+    });
+    test('400: Id is too large', () => {
+      return request(app)
+        .patch('/api/reviews/1010101010101')
+        .send({
+          inc_votes: 10,
+        })
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Review_id:1010101010101 is too large');
+        });
+    });
+    test('404: Id does not exist', () => {
+      return request(app)
+        .patch('/api/reviews/999999')
+        .send({
+          inc_votes: 10,
+        })
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Review_id:999999 does not exist');
         });
     });
   });
