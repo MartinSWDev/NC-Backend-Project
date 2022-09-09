@@ -311,4 +311,147 @@ describe('app.js tests', () => {
         });
     });
   });
+
+  describe('GET /api/reviews', () => {
+    // functionality
+    test('responds with object with property reviews which holds an array', () => {
+      return request(app)
+        .get('/api/reviews')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toHaveProperty('reviews');
+          expect(typeof body).toBe('object');
+          expect(Array.isArray(body)).toBe(false);
+          expect(Array.isArray(body.reviews)).toBe(true);
+        });
+    });
+    test('each object in array should have specified properties', () => {
+      return request(app)
+        .get('/api/reviews')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          reviews.forEach((review) => {
+            expect(typeof review).toBe('object');
+            expect(Array.isArray(review)).toBe(false);
+            expect(review).toHaveProperty('owner', expect.any(String));
+            expect(review).toHaveProperty('title', expect.any(String));
+            expect(review).toHaveProperty('review_id', expect.any(Number));
+            expect(review).toHaveProperty('category', expect.any(String));
+            expect(review).toHaveProperty('review_img_url', expect.any(String));
+            expect(review).toHaveProperty('created_at', expect.any(String));
+            expect(review).toHaveProperty('votes', expect.any(Number));
+            expect(review).toHaveProperty('designer', expect.any(String));
+            expect(review).toHaveProperty('comment_count', expect.any(Number));
+          });
+        });
+    });
+    test('array is sorted by date in descending order', () => {
+      return request(app)
+        .get('/api/reviews')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('created_at', { descending: true });
+        });
+    });
+    // query
+    test('endpoint can accept category query which returns only those with following category', () => {
+      return request(app)
+        .get('/api/reviews?category=euro%20game')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toEqual([
+            {
+              title: 'Agricola',
+              designer: 'Uwe Rosenberg',
+              owner: 'mallionaire',
+              review_img_url:
+                'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+              review_body: 'Farmyard fun!',
+              category: 'euro game',
+              created_at: '2021-01-18T10:00:20.514Z',
+              comment_count: 0,
+              votes: 1,
+              review_id: 1,
+            },
+          ]);
+        });
+    });
+    test('endpoint can accept category query which returns array of correct length', () => {
+      return request(app)
+        .get('/api/reviews?category=social%20deduction')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews.length).toEqual(11);
+        });
+    });
+    test('array is still sorted by date in descending order', () => {
+      return request(app)
+        .get('/api/reviews?category=social%20deduction')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('created_at', { descending: true });
+        });
+    });
+    test('each object in array still should have specified properties', () => {
+      return request(app)
+        .get('/api/reviews?category=social%20deduction')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          reviews.forEach((review) => {
+            expect(typeof review).toBe('object');
+            expect(Array.isArray(review)).toBe(false);
+            expect(review).toHaveProperty('owner', expect.any(String));
+            expect(review).toHaveProperty('title', expect.any(String));
+            expect(review).toHaveProperty('review_id', expect.any(Number));
+            expect(review).toHaveProperty('category', expect.any(String));
+            expect(review).toHaveProperty('review_img_url', expect.any(String));
+            expect(review).toHaveProperty('created_at', expect.any(String));
+            expect(review).toHaveProperty('votes', expect.any(Number));
+            expect(review).toHaveProperty('designer', expect.any(String));
+            expect(review).toHaveProperty('comment_count', expect.any(Number));
+          });
+        });
+    });
+    test('if query category exist but not comments with category, returns empty array', () => {
+      return request(app)
+        .get('/api/reviews?category=children%27s%20games')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy([]);
+        });
+    });
+    // errors
+    test('404: not a route', () => {
+      return request(app)
+        .get('/api/reviewssss')
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Endpoint not found');
+        });
+    });
+    test('404: query category does not exist (assumign we allow numbers etc)', () => {
+      return request(app)
+        .get('/api/reviews?category=45')
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Query category does not exist');
+        });
+    });
+    test('400: query not supported', () => {
+      return request(app)
+        .get('/api/reviews?animals=rhino')
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Query not supported');
+        });
+    });
+    test('404: category doesnt exist', () => {
+      return request(app)
+        .get('/api/reviews?category=monkeys')
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Query category does not exist');
+        });
+    });
+  });
 });
