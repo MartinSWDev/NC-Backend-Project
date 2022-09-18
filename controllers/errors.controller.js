@@ -18,13 +18,6 @@ function invalidInputSyntax(err, req, res, next) {
   }
 }
 
-function invalidQueryValue(err, req, res, next) {
-  if (err === 'Invalid query value syntax') {
-    res.status(400).send({ msg: 'Invalid query value syntax' });
-  } else {
-    next(err);
-  }
-}
 function queryKeyNotSupported(err, req, res, next) {
   if (err === 'Query not supported') {
     res.status(400).send({ msg: 'Query not supported' });
@@ -36,6 +29,14 @@ function queryKeyNotSupported(err, req, res, next) {
 function queryKeyDoesntExist(err, req, res, next) {
   if (err === 'Query category does not exist') {
     res.status(404).send({ msg: 'Query category does not exist' });
+  } else {
+    next(err);
+  }
+}
+
+function usernameDoesntExist(err, req, res, next) {
+  if (err.code === '23503') {
+    res.status(404).send({ msg: 'Username doesnt exist' });
   } else {
     next(err);
   }
@@ -56,4 +57,5 @@ module.exports = {
   alreadyErrs,
   notFound,
   invalidInputSyntax,
+  usernameDoesntExist,
 };
