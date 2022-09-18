@@ -14,6 +14,9 @@ const {
 const { getReviewById } = require('./controllers/getReviewById.controller');
 const { patchReviewById } = require('./controllers/patchReviewById.controller');
 const { getAllReviews } = require('./controllers/getAllReviews.controller');
+const {
+  getCommentsByReviewId,
+} = require('./controllers/getCommentsByReviewId.controller');
 
 const app = express();
 app.use(express.json());
@@ -24,6 +27,7 @@ app.get('/api/reviews/:review_id', getReviewById);
 app.get('/api/users', getAllUsers);
 app.patch('/api/reviews/:review_id', patchReviewById);
 app.get('/api/reviews', getAllReviews);
+app.get('/api/reviews/:review_id/comments', getCommentsByReviewId);
 app.get('/*', notFound);
 
 // Errors
