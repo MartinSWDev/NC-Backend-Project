@@ -21,7 +21,6 @@ exports.postCommentByReviewId = (req, res, next) => {
       res.status(201).send({ posted });
     })
     .catch((err) => {
-      console.log(err);
       next(err);
     });
 };

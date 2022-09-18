@@ -482,7 +482,6 @@ describe('app.js tests', () => {
         })
         .expect(201)
         .then(({ body }) => {
-          console.log(body);
           const obj_1 = {
             comment_id: 7,
             votes: 0,

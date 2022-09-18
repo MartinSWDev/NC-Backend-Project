@@ -6,7 +6,6 @@ exports.postComment = (reviewId, comment, author) => {
       msg: `Review_id:${reviewId} is too large`,
     });
   } else {
-    console.log('here');
     return db
       .query(
         `INSERT INTO comments (body, author, review_id) VALUES ($1, $2, $3) RETURNING *`,
