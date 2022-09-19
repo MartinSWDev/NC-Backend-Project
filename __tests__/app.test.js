@@ -312,7 +312,7 @@ describe('app.js tests', () => {
     });
   });
 
-  describe.only('GET /api/reviews', () => {
+  describe('GET /api/reviews', () => {
     // functionality
     test('responds with object with property reviews which holds an array', () => {
       return request(app)
