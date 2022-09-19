@@ -2,28 +2,71 @@ const { getCategories } = require('../models/getAllCategories.model');
 const { getReviews } = require('../models/getReviews.model');
 
 exports.getAllReviews = async (req, res, next) => {
-  if (
-    Object.keys(req.query).length > 0 &&
-    Object.keys(req.query)[0] !== 'category'
-  ) {
-    next('Query not supported');
-  }
-
-  const category = req.query.category;
   let categoryToQuery = '';
-  if (category) {
-    const categories = await getCategories();
-    for (const cat of categories) {
-      if (category === cat.slug) {
-        categoryToQuery = cat.slug;
+  let sortByQuery = null;
+  let orderQuery = null;
+
+  // if there are queries
+  if (Object.keys(req.query).length > 0) {
+    const queries = Object.keys(req.query);
+    const acceptQueries = ['category', 'sort_by', 'order'];
+
+    // make sure the queries keys are acceptable
+    const accept = acceptQueries.some((keys) => queries.includes(keys));
+    if (!accept) {
+      next('Query not supported');
+    } else {
+      // sort by
+      if (req.query.sort_by) {
+        const acceptSortBy = [
+          'owner',
+          'title',
+          'review_id',
+          'category',
+          'review_img_url',
+          'created_at',
+          'votes',
+          'desginer',
+          'comment_count',
+        ];
+        const acceptSort = acceptSortBy.some((keys) =>
+          req.query.sort_by.includes(keys)
+        );
+        if (!acceptSort) {
+          next('Invalid input syntax');
+        } else {
+          sortByQuery = req.query.sort_by;
+        }
+      }
+      // order
+      if (req.query.order) {
+        const acceptOrder = ['ASC', 'DESC'];
+        const acceptOrderCheck = acceptOrder.some((keys) =>
+          req.query.order.includes(keys)
+        );
+        if (!acceptOrderCheck) {
+          next('Invalid input syntax');
+        } else {
+          orderQuery = req.query.order;
+        }
+      }
+      // category
+      if (req.query.category) {
+        const categories = await getCategories();
+        for (const cat of categories) {
+          if (req.query.category === cat.slug) {
+            categoryToQuery = cat.slug;
+          }
+        }
+      }
+      // no category exists
+      if (req.query.category && categoryToQuery.length === 0) {
+        next('Query category does not exist');
       }
     }
   }
 
-  if (category && categoryToQuery.length === 0) {
-    next('Query category does not exist');
-  }
-  getReviews(categoryToQuery)
+  getReviews(categoryToQuery, sortByQuery, orderQuery)
     .then((reviews) => {
       res.status(200).send({ reviews });
     })

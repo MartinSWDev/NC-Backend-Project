@@ -312,7 +312,7 @@ describe('app.js tests', () => {
     });
   });
 
-  describe('GET /api/reviews', () => {
+  describe.only('GET /api/reviews', () => {
     // functionality
     test('responds with object with property reviews which holds an array', () => {
       return request(app)
@@ -420,6 +420,67 @@ describe('app.js tests', () => {
           expect(reviews).toBeSortedBy([]);
         });
     });
+
+    // sort and order query
+    test('can accept category and owner sort query and returns correct sorting', () => {
+      return request(app)
+        .get('/api/reviews?category=social%20deduction&&sort_by=owner')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('owner', { descending: true });
+        });
+    });
+    test('can accept category and title sort query and returns correct sorting', () => {
+      return request(app)
+        .get('/api/reviews?category=social%20deduction&&sort_by=title')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('title', { descending: true });
+        });
+    });
+    test('can accept category and review_id sort query and returns correct sorting', () => {
+      return request(app)
+        .get('/api/reviews?category=social%20deduction&&sort_by=review_id')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('review_id', { descending: true });
+        });
+    });
+    test('can accept category, sortby and order query and returns correct order', () => {
+      return request(app)
+        .get(
+          '/api/reviews?category=social%20deduction&&sort_by=owner&&order=ASC'
+        )
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('owner', { descending: false });
+        });
+    });
+    test('can accept just asc order query and returns correct order with sort_by still defaulting to date', () => {
+      return request(app)
+        .get('/api/reviews?order=ASC')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('created_at', { descending: false });
+        });
+    });
+    test('can accept just desc order query and returns correct order', () => {
+      return request(app)
+        .get('/api/reviews?order=DESC')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('created_at', { descending: true });
+        });
+    });
+    test('can accept sort_by and order query and returns correct order and  sort_by', () => {
+      return request(app)
+        .get('/api/reviews?order=ASC&&sort_by=owner')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('owner', { descending: false });
+        });
+    });
+
     // errors
     test('404: not a route', () => {
       return request(app)
