@@ -454,4 +454,59 @@ describe('app.js tests', () => {
         });
     });
   });
+
+  describe('DELETE /api/comments/:comment_id', () => {
+    // functionality
+    test('that nothing is returned and correct code 204', () => {
+      return request(app)
+        .delete('/api/comments/1')
+        .expect(204)
+        .then((res) => {
+          expect(res.noContent).toBe(true);
+        });
+    });
+    test('that id 1 does not exist in database, and that 5 other items remain', () => {
+      return request(app)
+        .delete('/api/comments/1')
+        .expect(204)
+        .then(() => {
+          const check1 = db
+            .query('SELECT * FROM comments WHERE comment_id = 1;')
+            .then((result) => {
+              expect(result.rows.length).toBe(0);
+            });
+          const check2 = db.query('SELECT * FROM comments;').then((result) => {
+            expect(result.rows.length).toBe(5);
+          });
+
+          return Promise.all([check1, check2]);
+        });
+    });
+
+    //errors
+    test('400: Id is too large', () => {
+      return request(app)
+        .delete('/api/comments/1010101010101')
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Comment_id:1010101010101 is too large');
+        });
+    });
+    test('404: Id does not exist', () => {
+      return request(app)
+        .delete('/api/comments/999999')
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Comment_id does not exist');
+        });
+    });
+    test('400: Invalid id', () => {
+      return request(app)
+        .delete('/api/comments/raw')
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Invalid input syntax');
+        });
+    });
+  });
 });
