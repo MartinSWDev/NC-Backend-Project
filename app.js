@@ -18,6 +18,8 @@ const { getAllReviews } = require('./controllers/getAllReviews.controller');
 const {
   postCommentByReviewId,
 } = require('./controllers/postCommentByReviewId.controller');
+  const { getCommentsByReviewId,
+} = require('./controllers/getCommentsByReviewId.controller');
 
 const app = express();
 app.use(express.json());
@@ -29,6 +31,7 @@ app.get('/api/users', getAllUsers);
 app.patch('/api/reviews/:review_id', patchReviewById);
 app.get('/api/reviews', getAllReviews);
 app.post('/api/reviews/:review_id/comments', postCommentByReviewId);
+app.get('/api/reviews/:review_id/comments', getCommentsByReviewId);
 app.get('/*', notFound);
 
 // Errors
