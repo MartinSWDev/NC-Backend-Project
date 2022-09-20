@@ -420,6 +420,67 @@ describe('app.js tests', () => {
           expect(reviews).toBeSortedBy([]);
         });
     });
+
+    // sort and order query
+    test('can accept category and owner sort query and returns correct sorting', () => {
+      return request(app)
+        .get('/api/reviews?category=social%20deduction&&sort_by=owner')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('owner', { descending: true });
+        });
+    });
+    test('can accept category and title sort query and returns correct sorting', () => {
+      return request(app)
+        .get('/api/reviews?category=social%20deduction&&sort_by=title')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('title', { descending: true });
+        });
+    });
+    test('can accept category and review_id sort query and returns correct sorting', () => {
+      return request(app)
+        .get('/api/reviews?category=social%20deduction&&sort_by=review_id')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('review_id', { descending: true });
+        });
+    });
+    test('can accept category, sortby and order query and returns correct order', () => {
+      return request(app)
+        .get(
+          '/api/reviews?category=social%20deduction&&sort_by=owner&&order=ASC'
+        )
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('owner', { descending: false });
+        });
+    });
+    test('can accept just asc order query and returns correct order with sort_by still defaulting to date', () => {
+      return request(app)
+        .get('/api/reviews?order=ASC')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('created_at', { descending: false });
+        });
+    });
+    test('can accept just desc order query and returns correct order', () => {
+      return request(app)
+        .get('/api/reviews?order=DESC')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('created_at', { descending: true });
+        });
+    });
+    test('can accept sort_by and order query and returns correct order and  sort_by', () => {
+      return request(app)
+        .get('/api/reviews?order=ASC&&sort_by=owner')
+        .expect(200)
+        .then(({ body: { reviews } }) => {
+          expect(reviews).toBeSortedBy('owner', { descending: false });
+        });
+    });
+
     // errors
     test('404: not a route', () => {
       return request(app)
@@ -429,7 +490,7 @@ describe('app.js tests', () => {
           expect(msg).toBe('Endpoint not found');
         });
     });
-    test('404: query category does not exist (assumign we allow numbers etc)', () => {
+    test('404: query category does not exist (assuming we allow numbers etc)', () => {
       return request(app)
         .get('/api/reviews?category=45')
         .expect(404)
@@ -454,6 +515,7 @@ describe('app.js tests', () => {
         });
     });
   });
+
 
   describe('DELETE /api/comments/:comment_id', () => {
     // functionality
@@ -480,33 +542,257 @@ describe('app.js tests', () => {
           });
 
           return Promise.all([check1, check2]);
-        });
+            });
     });
 
     //errors
     test('400: Id is too large', () => {
       return request(app)
-        .delete('/api/comments/1010101010101')
+       .delete('/api/comments/1010101010101')
         .expect(400)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Comment_id:1010101010101 is too large');
-        });
+             });
     });
     test('404: Id does not exist', () => {
       return request(app)
-        .delete('/api/comments/999999')
+      .delete('/api/comments/999999')
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Comment_id does not exist');
-        });
+            });
     });
     test('400: Invalid id', () => {
       return request(app)
-        .delete('/api/comments/raw')
-        .expect(400)
+       .delete('/api/comments/raw')
+       .expect(400)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Invalid input syntax');
         });
     });
   });
-});
+
+  describe('POST /api/reviews/:review_id/comments', () => {
+    // functionality
+    test('it accepts object with keys username and body and value of strings and returns object with key of posted containing posted object', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 'mallionaire',
+          body: 'Seemed pretty cool',
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body).toHaveProperty('posted');
+          expect(Array.isArray(body)).toBe(false);
+          expect(Array.isArray(body.posted)).toBe(false);
+          expect(typeof body).toBe('object');
+          expect(typeof body.posted).toBe('object');
+        });
+    });
+    test('it returns object of posted comment with correct properties', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 'mallionaire',
+          body: 'Seemed pretty cool',
+        })
+        .expect(201)
+        .then(({ body }) => {
+          const obj_1 = {
+            comment_id: 7,
+            votes: 0,
+            created_at: '2021-01-18T10:00:20.514Z',
+            author: 'mallionaire',
+            body: 'Seemed pretty cool',
+            review_id: 3,
+          };
+          expect(body.posted).toHaveProperty('comment_id', 7);
+          expect(body.posted).toHaveProperty('votes', 0);
+          expect(body.posted).toHaveProperty('created_at', expect.any(String));
+          expect(body.posted).toHaveProperty('author', 'mallionaire');
+          expect(body.posted).toHaveProperty('body', 'Seemed pretty cool');
+          expect(body.posted).toHaveProperty('review_id', 3);
+        });
+    });
+
+    // error handling
+    test('400: missing required fields for post input', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('Invalid input, missing key or value');
+        });
+    });
+    test('400: incorrect value type for post username input ', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 40,
+          body: 'Seemed pretty cool',
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('Invalid post data input');
+        });
+    });
+    test('400: incorrect value type for post body input ', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 'mallionaire',
+          body: true,
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('Invalid post data input');
+        });
+    });
+    test('400: Id is too large', () => {
+      return request(app)
+        .post('/api/reviews/1010101010101/comments')
+        .send({
+          username: 'mallionaire',
+          body: 'Seemed pretty cool',
+        })
+         .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Review_id:1010101010101 is too large');
+        });
+    });
+    test('404: Id does not exist', () => {
+      return request(app)
+        .post('/api/reviews/999999/comments')
+        .send({
+          username: 'mallionaire',
+          body: 'Seemed pretty cool',
+        })
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Username doesnt exist');
+        });
+    });
+    test('404: username does not exist', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 'MartinSWDev',
+          body: 'Seemed pretty cool',
+        })
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Username doesnt exist');
+             });
+    });
+  });
+
+  describe('GET /api/reviews/:review_id/comments', () => {
+    //functionality
+    test('responds with object with property comments which holds an array of objects', () => {
+      return request(app)
+        .get('/api/reviews/2/comments')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toHaveProperty('comments');
+          expect(typeof body).toBe('object');
+          expect(Array.isArray(body)).toBe(false);
+          expect(Array.isArray(body.comments)).toBe(true);
+          expect(Array.isArray(body.comments[0])).toBe(false);
+          expect(typeof body.comments[0]).toBe('object');
+        });
+    });
+
+    test('each object in array has specific properties', () => {
+      return request(app)
+        .get('/api/reviews/3/comments')
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          comments.forEach((obj) => {
+            expect(typeof obj).toBe('object');
+            expect(Array.isArray(obj)).toBe(false);
+            expect(obj).toHaveProperty('comment_id', expect.any(Number));
+            expect(obj).toHaveProperty('votes', expect.any(Number));
+            expect(obj).toHaveProperty('created_at', expect.any(String));
+            expect(obj).toHaveProperty('author', expect.any(String));
+            expect(obj).toHaveProperty('body', expect.any(String));
+            expect(obj).toHaveProperty('review_id', expect.any(Number));
+          });
+        });
+    });
+
+    test('it returns the correct array when passed review3', () => {
+      return request(app)
+        .get('/api/reviews/3/comments')
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          const output = [
+            {
+              comment_id: 2,
+              body: 'My dog loved this game too!',
+              review_id: 3,
+              author: 'mallionaire',
+              votes: 13,
+              created_at: '2021-01-18T10:09:05.410Z',
+            },
+            {
+              comment_id: 3,
+              body: "I didn't know dogs could play games",
+              review_id: 3,
+              author: 'philippaclaire9',
+              votes: 10,
+              created_at: '2021-01-18T10:09:48.110Z',
+            },
+            {
+              comment_id: 6,
+              body: 'Not sure about dogs, but my cat likes to get involved with board games, the boxes are their particular favourite',
+              review_id: 3,
+              author: 'philippaclaire9',
+              votes: 10,
+              created_at: '2021-03-27T19:49:48.110Z',
+            },
+          ];
+
+          expect(comments).toEqual(output);
+           });
+    });
+
+    //errors
+    test('400: Id is too large', () => {
+      return request(app)
+      .get('/api/reviews/1010101010101/comments')
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Review_id:1010101010101 is too large');
+          
+        });
+    });
+    test('404: Id does not exist', () => {
+      return request(app)
+       .get('/api/reviews/999999/comments')
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Review_id:999999 does not exist');
+          
+        });
+    });
+    test('400: Invalid id', () => {
+      return request(app)
+        .get('/api/reviews/sheep/comments')
+          .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Invalid input syntax');
+        });
+    });
+     test('404: not a route', () => {
+      return request(app)
+        .get('/api/reviews/3/comment')
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Endpoint not found');
+           });
+    });
+      });
+});     
+
