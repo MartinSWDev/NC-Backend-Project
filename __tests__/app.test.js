@@ -429,7 +429,7 @@ describe('app.js tests', () => {
           expect(msg).toBe('Endpoint not found');
         });
     });
-    test('404: query category does not exist (assumign we allow numbers etc)', () => {
+    test('404: query category does not exist (assuming we allow numbers etc)', () => {
       return request(app)
         .get('/api/reviews?category=45')
         .expect(404)
@@ -451,6 +451,111 @@ describe('app.js tests', () => {
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Query category does not exist');
+        });
+    });
+  });
+
+  describe('GET /api/reviews/:review_id/comments', () => {
+    //functionality
+    test('responds with object with property comments which holds an array of objects', () => {
+      return request(app)
+        .get('/api/reviews/2/comments')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toHaveProperty('comments');
+          expect(typeof body).toBe('object');
+          expect(Array.isArray(body)).toBe(false);
+          expect(Array.isArray(body.comments)).toBe(true);
+          expect(Array.isArray(body.comments[0])).toBe(false);
+          expect(typeof body.comments[0]).toBe('object');
+        });
+    });
+
+    test('each object in array has specific properties', () => {
+      return request(app)
+        .get('/api/reviews/3/comments')
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          comments.forEach((obj) => {
+            expect(typeof obj).toBe('object');
+            expect(Array.isArray(obj)).toBe(false);
+            expect(obj).toHaveProperty('comment_id', expect.any(Number));
+            expect(obj).toHaveProperty('votes', expect.any(Number));
+            expect(obj).toHaveProperty('created_at', expect.any(String));
+            expect(obj).toHaveProperty('author', expect.any(String));
+            expect(obj).toHaveProperty('body', expect.any(String));
+            expect(obj).toHaveProperty('review_id', expect.any(Number));
+          });
+        });
+    });
+
+    test('it returns the correct array when passed review3', () => {
+      return request(app)
+        .get('/api/reviews/3/comments')
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          const output = [
+            {
+              comment_id: 2,
+              body: 'My dog loved this game too!',
+              review_id: 3,
+              author: 'mallionaire',
+              votes: 13,
+              created_at: '2021-01-18T10:09:05.410Z',
+            },
+            {
+              comment_id: 3,
+              body: "I didn't know dogs could play games",
+              review_id: 3,
+              author: 'philippaclaire9',
+              votes: 10,
+              created_at: '2021-01-18T10:09:48.110Z',
+            },
+            {
+              comment_id: 6,
+              body: 'Not sure about dogs, but my cat likes to get involved with board games, the boxes are their particular favourite',
+              review_id: 3,
+              author: 'philippaclaire9',
+              votes: 10,
+              created_at: '2021-03-27T19:49:48.110Z',
+            },
+          ];
+
+          expect(comments).toEqual(output);
+        });
+    });
+
+    //errors
+    test('400: Id is too large', () => {
+      return request(app)
+        .get('/api/reviews/1010101010101/comments')
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Review_id:1010101010101 is too large');
+        });
+    });
+    test('404: Id does not exist', () => {
+      return request(app)
+        .get('/api/reviews/999999/comments')
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Review_id:999999 does not exist');
+        });
+    });
+    test('400: Invalid id', () => {
+      return request(app)
+        .get('/api/reviews/sheep/comments')
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Invalid input syntax');
+        });
+    });
+    test('404: not a route', () => {
+      return request(app)
+        .get('/api/reviews/3/comment')
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Endpoint not found');
         });
     });
   });
