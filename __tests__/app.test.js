@@ -455,6 +455,122 @@ describe('app.js tests', () => {
     });
   });
 
+  describe('POST /api/reviews/:review_id/comments', () => {
+    // functionality
+    test('it accepts object with keys username and body and value of strings and returns object with key of posted containing posted object', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 'mallionaire',
+          body: 'Seemed pretty cool',
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body).toHaveProperty('posted');
+          expect(Array.isArray(body)).toBe(false);
+          expect(Array.isArray(body.posted)).toBe(false);
+          expect(typeof body).toBe('object');
+          expect(typeof body.posted).toBe('object');
+        });
+    });
+    test('it returns object of posted comment with correct properties', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 'mallionaire',
+          body: 'Seemed pretty cool',
+        })
+        .expect(201)
+        .then(({ body }) => {
+          const obj_1 = {
+            comment_id: 7,
+            votes: 0,
+            created_at: '2021-01-18T10:00:20.514Z',
+            author: 'mallionaire',
+            body: 'Seemed pretty cool',
+            review_id: 3,
+          };
+          expect(body.posted).toHaveProperty('comment_id', 7);
+          expect(body.posted).toHaveProperty('votes', 0);
+          expect(body.posted).toHaveProperty('created_at', expect.any(String));
+          expect(body.posted).toHaveProperty('author', 'mallionaire');
+          expect(body.posted).toHaveProperty('body', 'Seemed pretty cool');
+          expect(body.posted).toHaveProperty('review_id', 3);
+        });
+    });
+
+    // error handling
+    test('400: missing required fields for post input', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('Invalid input, missing key or value');
+        });
+    });
+    test('400: incorrect value type for post username input ', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 40,
+          body: 'Seemed pretty cool',
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('Invalid post data input');
+        });
+    });
+    test('400: incorrect value type for post body input ', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 'mallionaire',
+          body: true,
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('Invalid post data input');
+        });
+    });
+    test('400: Id is too large', () => {
+      return request(app)
+        .post('/api/reviews/1010101010101/comments')
+        .send({
+          username: 'mallionaire',
+          body: 'Seemed pretty cool',
+        })
+         .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Review_id:1010101010101 is too large');
+        });
+    });
+    test('404: Id does not exist', () => {
+      return request(app)
+        .post('/api/reviews/999999/comments')
+        .send({
+          username: 'mallionaire',
+          body: 'Seemed pretty cool',
+        })
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Username doesnt exist');
+        });
+    });
+    test('404: username does not exist', () => {
+      return request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 'MartinSWDev',
+          body: 'Seemed pretty cool',
+        })
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Username doesnt exist');
+             });
+    });
+  });
+
   describe('GET /api/reviews/:review_id/comments', () => {
     //functionality
     test('responds with object with property comments which holds an array of objects', () => {
@@ -536,7 +652,7 @@ describe('app.js tests', () => {
     });
     test('404: Id does not exist', () => {
       return request(app)
-        .get('/api/reviews/999999/comments')
+       .get('/api/reviews/999999/comments')
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Review_id:999999 does not exist');
@@ -556,7 +672,10 @@ describe('app.js tests', () => {
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Endpoint not found');
-        });
+           });
     });
   });
 });
+
+       
+
