@@ -516,7 +516,6 @@ describe('app.js tests', () => {
     });
   });
 
-
   describe('DELETE /api/comments/:comment_id', () => {
     // functionality
     test('that nothing is returned and correct code 204', () => {
@@ -542,30 +541,30 @@ describe('app.js tests', () => {
           });
 
           return Promise.all([check1, check2]);
-            });
+        });
     });
 
     //errors
     test('400: Id is too large', () => {
       return request(app)
-       .delete('/api/comments/1010101010101')
+        .delete('/api/comments/1010101010101')
         .expect(400)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Comment_id:1010101010101 is too large');
-             });
+        });
     });
     test('404: Id does not exist', () => {
       return request(app)
-      .delete('/api/comments/999999')
+        .delete('/api/comments/999999')
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Comment_id does not exist');
-            });
+        });
     });
     test('400: Invalid id', () => {
       return request(app)
-       .delete('/api/comments/raw')
-       .expect(400)
+        .delete('/api/comments/raw')
+        .expect(400)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Invalid input syntax');
         });
@@ -657,7 +656,7 @@ describe('app.js tests', () => {
           username: 'mallionaire',
           body: 'Seemed pretty cool',
         })
-         .expect(400)
+        .expect(400)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Review_id:1010101010101 is too large');
         });
@@ -684,7 +683,7 @@ describe('app.js tests', () => {
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Username doesnt exist');
-             });
+        });
     });
   });
 
@@ -755,44 +754,56 @@ describe('app.js tests', () => {
           ];
 
           expect(comments).toEqual(output);
-           });
+        });
     });
 
     //errors
     test('400: Id is too large', () => {
       return request(app)
-      .get('/api/reviews/1010101010101/comments')
+        .get('/api/reviews/1010101010101/comments')
         .expect(400)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Review_id:1010101010101 is too large');
-          
         });
     });
     test('404: Id does not exist', () => {
       return request(app)
-       .get('/api/reviews/999999/comments')
+        .get('/api/reviews/999999/comments')
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Review_id:999999 does not exist');
-          
         });
     });
     test('400: Invalid id', () => {
       return request(app)
         .get('/api/reviews/sheep/comments')
-          .expect(400)
+        .expect(400)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Invalid input syntax');
         });
     });
-     test('404: not a route', () => {
+    test('404: not a route', () => {
       return request(app)
         .get('/api/reviews/3/comment')
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).toBe('Endpoint not found');
-           });
+        });
     });
-      });
-});     
+  });
 
+  describe('GET /api', () => {
+    {
+      test('it returns JSON with all available endpoints', () => {
+        return request(app)
+          .get('/api')
+          .expect(200)
+          .then((res) => {
+            expect(res.body).toHaveProperty('endpoints');
+            expect(typeof res.body.endpoints).toBe('object');
+            expect(res.type).toBe('application/json');
+          });
+      });
+    }
+  });
+});

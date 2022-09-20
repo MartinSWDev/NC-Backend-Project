@@ -21,9 +21,10 @@ const {
 const {
   postCommentByReviewId,
 } = require('./controllers/postCommentByReviewId.controller');
-  const { getCommentsByReviewId,
+const {
+  getCommentsByReviewId,
 } = require('./controllers/getCommentsByReviewId.controller');
-
+const { getAllApi } = require('./controllers/getAllApi.controller');
 
 const app = express();
 app.use(express.json());
@@ -39,7 +40,7 @@ app.delete('/api/comments/:comment_id', deleteCommentById);
 
 app.post('/api/reviews/:review_id/comments', postCommentByReviewId);
 app.get('/api/reviews/:review_id/comments', getCommentsByReviewId);
-
+app.get('/api', getAllApi);
 app.get('/*', notFound);
 
 // Errors
