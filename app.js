@@ -30,17 +30,16 @@ const app = express();
 app.use(express.json());
 
 // Endpoints
-app.get('/api/categories', getAllCategories);
-app.get('/api/reviews/:review_id', getReviewById);
-app.get('/api/users', getAllUsers);
-app.patch('/api/reviews/:review_id', patchReviewById);
-app.get('/api/reviews', getAllReviews);
-
-app.delete('/api/comments/:comment_id', deleteCommentById);
-
-app.post('/api/reviews/:review_id/comments', postCommentByReviewId);
-app.get('/api/reviews/:review_id/comments', getCommentsByReviewId);
 app.get('/api', getAllApi);
+app.get('/api/categories', getAllCategories);
+app.get('/api/reviews', getAllReviews);
+app.get('/api/reviews/:review_id', getReviewById);
+app.get('/api/reviews/:review_id/comments', getCommentsByReviewId);
+app.get('/api/users', getAllUsers);
+
+app.patch('/api/reviews/:review_id', patchReviewById);
+app.post('/api/reviews/:review_id/comments', postCommentByReviewId);
+app.delete('/api/comments/:comment_id', deleteCommentById);
 app.get('/*', notFound);
 
 // Errors
