@@ -757,6 +757,16 @@ describe('app.js tests', () => {
         });
     });
 
+    test('it returns an empty array when no comments', () => {
+      return request(app)
+        .get('/api/reviews/1/comments')
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          const output = [];
+          expect(comments).toEqual(output);
+        });
+    });
+
     //errors
     test('400: Id is too large', () => {
       return request(app)
