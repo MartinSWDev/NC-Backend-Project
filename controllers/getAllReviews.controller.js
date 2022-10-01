@@ -3,8 +3,8 @@ const { getReviews } = require('../models/getReviews.model');
 
 exports.getAllReviews = async (req, res, next) => {
   let categoryToQuery = '';
-  let sortByQuery = null;
-  let orderQuery = null;
+  let sortByQuery = '';
+  let orderQuery = '';
 
   // if there are queries
   if (Object.keys(req.query).length > 0) {
@@ -32,10 +32,10 @@ exports.getAllReviews = async (req, res, next) => {
         const acceptSort = acceptSortBy.some((keys) =>
           req.query.sort_by.includes(keys)
         );
-        if (!acceptSort) {
-          next('Invalid input syntax');
-        } else {
+        if (acceptSort) {
           sortByQuery = req.query.sort_by;
+        } else {
+          next('Invalid query syntax');
         }
       }
       // order
@@ -44,10 +44,10 @@ exports.getAllReviews = async (req, res, next) => {
         const acceptOrderCheck = acceptOrder.some((keys) =>
           req.query.order.includes(keys)
         );
-        if (!acceptOrderCheck) {
-          next('Invalid input syntax');
-        } else {
+        if (acceptOrderCheck) {
           orderQuery = req.query.order;
+        } else {
+          next('Invalid query syntax');
         }
       }
       // category

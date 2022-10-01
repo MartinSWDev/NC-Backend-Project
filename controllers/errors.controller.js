@@ -26,6 +26,14 @@ function queryKeyNotSupported(err, req, res, next) {
   }
 }
 
+function queryInvalidSyntax(err, req, res, next) {
+  if (err === 'Invalid query syntax') {
+    res.status(400).send({ msg: 'Invalid query syntax' });
+  } else {
+    next(err);
+  }
+}
+
 function queryKeyDoesntExist(err, req, res, next) {
   if (err === 'Query category does not exist') {
     res.status(404).send({ msg: 'Query category does not exist' });
@@ -58,4 +66,5 @@ module.exports = {
   notFound,
   invalidInputSyntax,
   usernameDoesntExist,
+  queryInvalidSyntax,
 };

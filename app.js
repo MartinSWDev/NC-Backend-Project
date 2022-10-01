@@ -11,6 +11,7 @@ const {
   queryKeyDoesntExist,
   queryKeyNotSupported,
   usernameDoesntExist,
+  queryInvalidSyntax,
 } = require('./controllers/errors.controller');
 const { getReviewById } = require('./controllers/getReviewById.controller');
 const { patchReviewById } = require('./controllers/patchReviewById.controller');
@@ -49,6 +50,7 @@ app.get('/*', notFound);
 app.use(alreadyErrs);
 app.use(invalidInputSyntax);
 app.use(queryKeyNotSupported);
+app.use(queryInvalidSyntax);
 app.use(queryKeyDoesntExist);
 app.use(usernameDoesntExist);
 app.use(defaultErr);

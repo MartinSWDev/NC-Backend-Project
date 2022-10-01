@@ -514,6 +514,22 @@ describe('app.js tests', () => {
           expect(msg).toBe('Query category does not exist');
         });
     });
+    test('404: order inccorect', () => {
+      return request(app)
+        .get('/api/reviews?order=monkeys')
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Invalid query syntax');
+        });
+    });
+    test('404: sort_by incorrect', () => {
+      return request(app)
+        .get('/api/reviews?sort_by=monkeys')
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).toBe('Invalid query syntax');
+        });
+    });
   });
 
   describe('DELETE /api/comments/:comment_id', () => {
