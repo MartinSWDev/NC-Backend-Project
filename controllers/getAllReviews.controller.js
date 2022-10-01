@@ -26,7 +26,7 @@ exports.getAllReviews = async (req, res, next) => {
           'review_img_url',
           'created_at',
           'votes',
-          'desginer',
+          'designer',
           'comment_count',
         ];
         const acceptSort = acceptSortBy.some((keys) =>
