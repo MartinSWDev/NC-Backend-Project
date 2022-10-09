@@ -112,3 +112,13 @@ The following have been git ignored:
 `node_modules`
 
 `.env.*`
+
+## Still to add: 
+- Convert to express routers
+- Add GET /api/users/:username
+- add PATCH /api/comments/:comment_id
+- add POST /api/reviews
+- add GET /api/reviews (pagination)
+- add GET /api/reviews/:review_id/comments (pagination)
+- add POST /api/categories
+- add DELETE /api/reviews/:review_id
